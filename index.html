@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>English Move Arena｜體育班英文動起來</title>
+<style>
+:root{--bg:#071426;--panel:#10233d;--ink:#f7fbff;--muted:#b7c8da;--a:#53e3a6;--b:#ffd166;--c:#ff6b6b;--d:#6cb6ff}
+*{box-sizing:border-box} body{margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;background:radial-gradient(circle at 50% 20%,#173a60,#071426 60%);color:var(--ink);min-height:100vh;overflow-x:hidden}
+button{font:inherit;color:inherit}.wrap{max-width:1500px;margin:auto;padding:18px}.top{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+h1{font-size:clamp(28px,4vw,58px);margin:0}.sub{color:var(--muted);font-size:clamp(16px,1.7vw,24px)}
+.stats{display:flex;gap:10px;flex-wrap:wrap}.pill{background:#ffffff12;border:1px solid #ffffff28;border-radius:18px;padding:10px 16px;font-size:clamp(16px,1.6vw,23px)}
+.arena{position:relative;height:min(72vh,820px);min-height:590px;margin-top:15px;border:3px solid #ffffff25;border-radius:32px;background:linear-gradient(90deg,#ffffff08 1px,transparent 1px),linear-gradient(#ffffff08 1px,transparent 1px),#0a1c31;background-size:70px 70px;overflow:hidden;box-shadow:0 20px 70px #0008}
+.center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(54%,760px);text-align:center;background:#081526e8;border:2px solid #ffffff24;border-radius:28px;padding:22px;z-index:3}
+.word{font-size:clamp(42px,7vw,100px);font-weight:900;letter-spacing:1px}.meaning{font-size:clamp(18px,2.1vw,30px);color:var(--muted);margin:8px 0 14px}
+.instruction{font-size:clamp(18px,2vw,28px);font-weight:700}.start{border:0;border-radius:18px;background:var(--a);color:#052016;padding:14px 28px;font-size:clamp(20px,2vw,30px);font-weight:900;cursor:pointer}
+.zone{position:absolute;width:31%;height:27%;border:4px solid #ffffff50;border-radius:28px;display:flex;align-items:center;justify-content:center;text-align:center;padding:15px;font-weight:900;font-size:clamp(23px,3vw,45px);cursor:pointer;transition:.12s;user-select:none;touch-action:manipulation}
+.zone:active{transform:scale(.96)}.z0{left:2%;top:3%;background:#53e3a628}.z1{right:2%;top:3%;background:#ffd16628}.z2{left:2%;bottom:3%;background:#ff6b6b28}.z3{right:2%;bottom:3%;background:#6cb6ff28}
+.flash{animation:flash .5s}@keyframes flash{50%{filter:brightness(2.2);transform:scale(1.04)}}.bad{animation:bad .4s}@keyframes bad{25%,75%{transform:translateX(12px)}50%{transform:translateX(-12px)}}
+.overlay{position:absolute;inset:0;background:#020913e8;z-index:10;display:none;align-items:center;justify-content:center;text-align:center;padding:30px}.overlay.show{display:flex}.result{font-size:clamp(25px,4vw,60px)}.small{font-size:clamp(15px,1.5vw,21px);color:var(--muted);margin-top:12px}
+.controls{display:flex;justify-content:center;gap:12px;margin-top:14px;flex-wrap:wrap}.ghost{background:#ffffff12;border:1px solid #ffffff30;border-radius:14px;padding:10px 16px;cursor:pointer}
+@media(max-width:800px){.arena{min-height:720px}.center{width:70%}.zone{width:40%;height:24%}.z0,.z2{left:1%}.z1,.z3{right:1%}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="top">
+  <div><h1>🏃 English Move Arena</h1><div class="sub">體育班英文動起來｜跑到正確答案並觸碰大螢幕</div></div>
+  <div class="stats"><div class="pill">⭐ 分數 <b id="score">0</b></div><div class="pill">🔥 連勝 <b id="streak">0</b></div><div class="pill">⏱️ <b id="time">60</b>s</div><div class="pill">題目 <b id="count">0</b></div></div>
+ </div>
+ <main class="arena" id="arena">
+   <button class="zone z0" data-i="0"></button><button class="zone z1" data-i="1"></button>
+   <button class="zone z2" data-i="2"></button><button class="zone z3" data-i="3"></button>
+   <section class="center">
+     <div class="instruction" id="prompt">看到英文後，跑向四個角落中的正確中文意思！</div>
+     <div class="word" id="word">READY?</div>
+     <div class="meaning" id="hint">每答對一題 +10；連續答對有加成</div>
+     <button class="start" id="start">開始 60 秒挑戰</button>
+   </section>
+   <div class="overlay" id="overlay"><div><div class="result" id="result"></div><button class="start" id="again">再挑戰一次</button></div></div>
+ </main>
+ <div class="controls"><button class="ghost" id="speak">🔊 再念一次</button><button class="ghost" id="mode">🎯 模式：英 → 中</button><button class="ghost" id="reset">↻ 重設</button></div>
+ <div class="small">教學玩法：將學生分成 2–4 隊，每隊派一人站在螢幕中央前方。題目出現後，學生必須快速橫移／折返跑到正確區域並觸碰答案，再換下一位。教師可要求答題者大聲念出單字或用它造句後才計分。</div>
+</div>
+<script>
+const bank=[
+["sprint","短距離衝刺"],["endurance","耐力"],["balance","平衡"],["agility","敏捷"],
+["stretch","伸展"],["recover","恢復"],["strategy","策略"],["teammate","隊友"],
+["compete","競爭／比賽"],["practice","練習"],["improve","進步／改善"],["focus","專注"],
+["strength","力量"],["coach","教練"],["warm-up","熱身"],["hydration","補充水分"],
+["defense","防守"],["offense","進攻"],["victory","勝利"],["challenge","挑戰"]
+];
+let score=0,streak=0,left=60,timer=null,current=null,correct=0,playing=false,reverse=false,count=0;
+const $=id=>document.getElementById(id), zones=[...document.querySelectorAll(".zone")];
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function speak(t){if(!("speechSynthesis"in window))return;speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(t);u.lang="en-US";u.rate=.8;speechSynthesis.speak(u)}
+function next(){
+ current=bank[Math.floor(Math.random()*bank.length)];
+ let wrong=shuffle(bank.filter(x=>x!==current)).slice(0,3), opts=shuffle([current,...wrong]);correct=opts.indexOf(current);
+ $("word").textContent=reverse?current[1]:current[0]; $("prompt").textContent=reverse?"跑向正確的英文單字！":"跑向正確的中文意思！";
+ $("hint").textContent="看清楚、移動、觸碰！";
+ zones.forEach((z,i)=>z.textContent=reverse?opts[i][0]:opts[i][1]);
+ if(!reverse)speak(current[0]);
+}
+function answer(i){
+ if(!playing)return;
+ count++; $("count").textContent=count;
+ if(i===correct){streak++;score+=10+Math.min(streak-1,5)*2;zones[i].classList.add("flash");setTimeout(()=>zones[i].classList.remove("flash"),450);tone(700);$("hint").textContent="✓ Correct! +"+(10+Math.min(streak-1,5)*2)}
+ else{streak=0;score=Math.max(0,score-3);zones[i].classList.add("bad");setTimeout(()=>zones[i].classList.remove("bad"),400);tone(180);$("hint").textContent="✗ 再快也要看準！"}
+ $("score").textContent=score;$("streak").textContent=streak;setTimeout(next,500)
+}
+function tone(f){try{let a=new (AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.frequency.value=f;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.08,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.12);o.start();o.stop(a.currentTime+.13)}catch(e){}}
+function start(){
+ score=streak=count=0;left=60;playing=true;$("score").textContent=0;$("streak").textContent=0;$("count").textContent=0;$("time").textContent=left;$("start").style.display="none";$("overlay").classList.remove("show");next();
+ clearInterval(timer);timer=setInterval(()=>{left--;$("time").textContent=left;if(left<=0)end()},1000)
+}
+function end(){playing=false;clearInterval(timer);$("result").innerHTML=`🏁 挑戰完成！<br>得分：<b>${score}</b><br>完成 ${count} 題`;$("overlay").classList.add("show")}
+zones.forEach(z=>z.onclick=()=>answer(+z.dataset.i));
+$("start").onclick=start;$("again").onclick=start;$("reset").onclick=()=>location.reload();
+$("speak").onclick=()=>current&&speak(current[0]);
+$("mode").onclick=()=>{reverse=!reverse;$("mode").textContent=reverse?"🎯 模式：中 → 英":"🎯 模式：英 → 中";if(playing)next()};
+document.addEventListener("keydown",e=>{let m={q:0,p:1,z:2,m:3};if(m[e.key.toLowerCase()]!==undefined)answer(m[e.key.toLowerCase()])});
+</script>
+</body></html>
